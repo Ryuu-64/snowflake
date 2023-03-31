@@ -9,17 +9,17 @@ public class Snowflake {
     private static final long MAX_INSTANCE_ID = (1L << INSTANCE_ID_BITS) - 1;
     private static final long MAX_TIMESTAMP = (1L << TIMESTAMP_BITS) - 1;
     private static final long MAX_SEQUENCE_ID = (1L << SEQUENCE_BITS) - 1;
-    private final long twepoch;
+    private final long epoch;
     private final long instanceId;
     private long sequenceId = 0L;
     private long lastTimestamp = -1L;
 
-    public Snowflake(long twepoch, long instanceId) {
+    public Snowflake(long epoch, long instanceId) {
         if (instanceId < 0 || instanceId > MAX_INSTANCE_ID) {
             throw new IllegalArgumentException("instanceId");
         }
 
-        this.twepoch = twepoch;
+        this.epoch = epoch;
         this.instanceId = instanceId;
     }
 
@@ -28,7 +28,7 @@ public class Snowflake {
     }
 
     public long getTimestamp(long id) {
-        return (id >> TIMESTAMP_SHIFT & MAX_TIMESTAMP) + twepoch;
+        return (id >> TIMESTAMP_SHIFT & MAX_TIMESTAMP) + epoch;
     }
 
     public synchronized long nextId() {
@@ -49,7 +49,7 @@ public class Snowflake {
 
         lastTimestamp = timestamp;
 
-        return timestamp - twepoch << TIMESTAMP_SHIFT |
+        return timestamp - epoch << TIMESTAMP_SHIFT |
                instanceId << INSTANCE_ID_SHIFT |
                sequenceId;
     }
