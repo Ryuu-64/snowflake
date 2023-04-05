@@ -21,17 +21,29 @@ public class Snowflake {
 
     private final long instanceId;
 
+    private final long nonMonotonicTimeTolerance;
+
     private long sequenceId = 0L;
 
     private long lastTimestamp = -1L;
 
+
     public Snowflake(long epoch, long instanceId) {
+        this(epoch, instanceId, 0);
+    }
+
+    public Snowflake(long epoch, long instanceId, long nonMonotonicTimeTolerance) {
         if (instanceId < 0 || instanceId > MAX_INSTANCE_ID) {
             throw new IllegalArgumentException("instanceId");
         }
 
+        if (nonMonotonicTimeTolerance < 0) {
+            throw new IllegalArgumentException("nonMonotonicTimeTolerance");
+        }
+
         this.epoch = epoch;
         this.instanceId = instanceId;
+        this.nonMonotonicTimeTolerance = nonMonotonicTimeTolerance;
     }
 
     public long getInstanceId(long id) {
@@ -45,7 +57,11 @@ public class Snowflake {
     public synchronized long nextId() {
         long timestamp = System.currentTimeMillis();
         if (timestamp < this.lastTimestamp) {
-            throw new IllegalStateException("Clock moved backwards.");
+            if (this.lastTimestamp - timestamp < nonMonotonicTimeTolerance) {
+                timestamp = lastTimestamp;
+            } else {
+                throw new IllegalStateException("Clock moved backwards.");
+            }
         }
 
         if (timestamp == this.lastTimestamp) {
@@ -61,8 +77,8 @@ public class Snowflake {
         lastTimestamp = timestamp;
 
         return timestamp - epoch << TIMESTAMP_SHIFT |
-               instanceId << INSTANCE_ID_SHIFT |
-               sequenceId;
+                instanceId << INSTANCE_ID_SHIFT |
+                sequenceId;
     }
 
     private long getNextTimestamp(long lastTimestamp) {
