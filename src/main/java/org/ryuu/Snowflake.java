@@ -2,16 +2,27 @@ package org.ryuu;
 
 public class Snowflake {
     private static final int TIMESTAMP_BITS = 41;
+
     private static final int INSTANCE_ID_BITS = 10;
+
     private static final int SEQUENCE_BITS = 12;
+
     private static final int INSTANCE_ID_SHIFT = SEQUENCE_BITS;
+
     private static final int TIMESTAMP_SHIFT = SEQUENCE_BITS + INSTANCE_ID_BITS;
+
     private static final long MAX_INSTANCE_ID = (1L << INSTANCE_ID_BITS) - 1;
+
     private static final long MAX_TIMESTAMP = (1L << TIMESTAMP_BITS) - 1;
+
     private static final long MAX_SEQUENCE_ID = (1L << SEQUENCE_BITS) - 1;
+
     private final long epoch;
+
     private final long instanceId;
+
     private long sequenceId = 0L;
+
     private long lastTimestamp = -1L;
 
     public Snowflake(long epoch, long instanceId) {
